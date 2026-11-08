@@ -1,0 +1,61 @@
+plugins {
+    id 'com.android.application'
+}
+
+// Pengaturan aplikasi Android. Ubah alamat situs di HOST_NAME bila domain berganti.
+def HOST_NAME = 'kerjafakfak.com'
+def LAUNCH_PATH = '/dashboard'
+
+// Nomor versi otomatis dari GitHub Actions (setiap build naik 1)
+def kodeVersi = (System.getenv('VERSION_CODE') ?: '1').toInteger()
+def namaVersi = System.getenv('VERSION_NAME') ?: "1.0.${kodeVersi}"
+
+android {
+    namespace 'com.tukangbangunan.arsip'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.tukangbangunan.arsip'
+        minSdk 21
+        targetSdk 35
+        versionCode kodeVersi
+        versionName namaVersi
+        manifestPlaceholders = [
+            hostName : HOST_NAME,
+            launchUrl: "https://${HOST_NAME}${LAUNCH_PATH}".toString()
+        ]
+    }
+
+    signingConfigs {
+        release {
+            // Diisi dari GitHub Secrets (lihat android/README.md)
+            def ks = System.getenv('KEYSTORE_FILE')
+            if (ks) {
+                storeFile file(ks)
+                storePassword System.getenv('KEYSTORE_PASSWORD')
+                keyAlias System.getenv('KEY_ALIAS') ?: 'arsiptb'
+                keyPassword System.getenv('KEY_PASSWORD') ?: System.getenv('KEYSTORE_PASSWORD')
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (System.getenv('KEYSTORE_FILE')) signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    lint {
+        abortOnError false
+        checkReleaseBuilds false
+    }
+}
+
+dependencies {
+    implementation 'com.google.androidbrowserhelper:androidbrowserhelper:2.5.0'
+}
