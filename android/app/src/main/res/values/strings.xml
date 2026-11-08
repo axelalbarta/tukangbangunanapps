@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="appName">Arsip Tukang Bangunan</string>
+    <string name="launcherName">Arsip TB</string>
+    <string name="providerAuthority">com.tukangbangunan.arsip.fileprovider</string>
+    <string name="assetStatements" translatable="false">
+        [{ \"relation\": [\"delegate_permission/common.handle_all_urls\"],
+           \"target\": {\"namespace\": \"web\", \"site\": \"https://kerjafakfak.com\"} }]
+    </string>
+</resources>
