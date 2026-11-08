@@ -1,0 +1,43 @@
+name: Buat kunci Android
+
+on:
+  workflow_dispatch:
+
+jobs:
+  kunci:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Buat kunci
+        run: |
+          mkdir kunci && cd kunci
+          PASS=$(openssl rand -base64 24 | tr -dc 'A-Za-z0-9' | head -c 24)
+          keytool -genkeypair -v -keystore arsiptb.jks -alias arsiptb -keyalg RSA -keysize 2048 -validity 10000 \
+            -storepass "$PASS" -keypass "$PASS" -dname "CN=Tukang Bangunan, O=Tukang Bangunan, L=Fakfak, ST=Papua Barat, C=ID"
+          base64 -w0 arsiptb.jks > KEYSTORE_BASE64.txt
+          SHA=$(keytool -list -v -keystore arsiptb.jks -alias arsiptb -storepass "$PASS" | grep -m1 'SHA256:' | awk '{print $2}')
+          cat > PETUNJUK.txt <<TXT
+          Buka repository GitHub > Settings > Secrets and variables > Actions > New repository secret.
+          Buat 4 secret berikut:
+
+            KEYSTORE_BASE64   = (isi file KEYSTORE_BASE64.txt, salin semuanya)
+            KEYSTORE_PASSWORD = $PASS
+            KEY_ALIAS         = arsiptb
+            KEY_PASSWORD      = $PASS
+
+          Sidik jari SHA-256: $SHA
+
+          Simpan file arsiptb.jks dan password di atas di tempat aman.
+          Setelah secret diisi, jalankan workflow "Bangun aplikasi Android".
+          TXT
+          echo "Kunci dibuat. Unduh artifact 'kunci-android' (hanya tersedia 1 hari)." >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kunci-android
+          path: kunci/
+          retention-days: 1
